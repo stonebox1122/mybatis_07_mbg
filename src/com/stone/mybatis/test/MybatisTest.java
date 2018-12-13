@@ -3,6 +3,7 @@ package com.stone.mybatis.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.io.Resources;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import com.stone.mybatis.bean.Employee;
 import com.stone.mybatis.dao.EmployeeMapper;
 import com.stone.mybatis.dao.EmployeeMapperAnnotation;
+import com.stone.mybatis.dao.EmployeeMapperPlus;
 
 /**
  * 1、接口式编程 原生： Dao ===> DaoImpl mybatis Mapper ===> xxxMapper.xml
@@ -157,5 +159,96 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
+	
+	@Test
+	public void test05() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
 
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+		
+		try {
+			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
+			List<Employee> empsByLastNameLike = mapper.getEmpsByLastNameLike("%e%");
+			for (Employee employee : empsByLastNameLike) {
+				System.out.println(employee);
+			}
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	@Test
+	public void test06() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+		
+		try {
+			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
+			Map<String, Object> empByIdReturnMap = mapper.getEmpByIdReturnMap(1);
+			System.out.println(empByIdReturnMap);
+		} finally {
+			openSession.close();
+		}
+	}
+	//输出结果：{gender=1, last_name=tom, id=1, email=tom@stone.com}
+	
+	@Test
+	public void test07() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+		
+		try {
+			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
+			Map<Integer, Employee> empByLastNameLikeReturnMap = mapper.getEmpByLastNameLikeReturnMap("%e%");
+			System.out.println(empByLastNameLikeReturnMap);
+		} finally {
+			openSession.close();
+		}
+	}
+	//输出结果：{3=Employee [id=3, lastName=jerry, email=jerry@stone.com, gender=1], 4=Employee [id=4, lastName=jerry, email=jerry@stone.com, gender=1]}
+
+	
+	@Test
+	public void test08() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+		
+		try {
+			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
+			Employee empById = mapper.getEmpById(1);
+			System.out.println(empById);
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	@Test
+	public void test09() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+		
+		try {
+			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
+			Employee empAndDept = mapper.getEmpAndDept(1);
+			System.out.println(empAndDept);
+			System.out.println(empAndDept.getDept());
+		} finally {
+			openSession.close();
+		}
+	}
+	
 }
