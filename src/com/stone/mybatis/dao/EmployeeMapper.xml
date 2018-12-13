@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stone.mybatis.dao.EmployeeMapper">
+<!-- 
+namespace：表示名称空间,指定为接口的全类名
+id：唯一标识，指定为接口的方法名称
+resultType：返回值类型
+#{id}：从传递过来的参数中取出id值
+ -->	
+ 	<select id="getEmpById" resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee where id = #{id}
+	</select> 
+ 	
+ 	<select id="getEmpById" resultType="com.stone.mybatis.bean.Employee" databaseId="mysql">
+		select * from tbl_employee where id = #{idid}
+	</select> 
+	
+	<select id="getEmpById" resultType="com.stone.mybatis.bean.Employee" databaseId="oracle">
+		select employee_id id,last_name lastName,email from employees where employee_id=#{id}
+	</select>
+	
+	<!-- public Employee getEmpByIdAndLastName(Integer id, String LastName); -->
+	<select id="getEmpByIdAndLastName" resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee where id=#{id} and last_name=#{lastName}
+	</select>
+	
+	<!-- public Employee getEmpByMap(Map<String, Object> map); -->
+	<select id="getEmpByMap" resultType="com.stone.mybatis.bean.Employee">
+		select * from ${tableName} where id=${id} and last_name=#{lastName}
+	</select>
+	
+	<!-- public void insertEmp(Employee employee); -->
+	<!-- parameterType：参数类型，可以省略 -->
+	<!-- 
+		获取自增主键的值：
+			MySQL支持自增主键，自增主键值的获取，Mybatis也是利用statement.getGeneratedKeys()
+			useGeneratedKeys="true"：使用自增主键获取主键值策略
+			keyProperty:指定对应的主键属性，也就是Mybatis获取到主键值以后，将这个值封装给Javabean的哪个属性
+	 -->
+	<insert id="insertEmp" useGeneratedKeys="true" keyProperty="id" databaseId="mysql">
+		insert into tbl_employee(last_name,gender,email)
+		values(#{lastName},#{gender},#{email})
+	</insert>
+	
+	<!-- 
+		Oracle不支持自增：Oracle使用序列来模拟自增，每次插入的数据的主键是从序列中取值。
+	 -->
+	 <insert id="insertEmp" databaseId="oracle">
+	 	<!-- 
+	 		keyProperty：查出的主键值封装给javabean的哪个属性
+	 		order="BEFORE"：当前SQL在插入SQL之前运行
+	 		resultType：查出的数据返回值类型
+	 	-->
+	 	<!-- 
+	 		<selectKey keyProperty="id" order="BEFORE" resultType="Integer">
+	 			select emp_seq.nextval from dual
+	 		</selectKey> 
+	 	-->
+		<!-- 插入时的主键是从序列中拿到的 -->
+		<!-- 
+			insert into emp(empno,ename)
+			values(#{id},#{lastName}) 
+		-->
+		
+		
+		<!-- 也可以直接使用序列进行插入 -->
+		insert into emp(empno,ename)
+		values(emp_seq.nextval,#{lastName<!-- ,jdbcType=NULL -->})
+		
+		<!-- 
+			使用order="AFTER"，先执行插入SQL（从序列中取值），再来获取id的值 
+			如果一次插入多条数据，则取到的是最后一个id的值
+		-->
+		<selectKey keyProperty="id" order="AFTER" resultType="Integer">
+			select emp_seq.currval from dual
+		</selectKey>
+	</insert>
+	
+	<!-- public void updateEmp(Employee employee); -->
+	<update id="updateEmp">
+		update tbl_employee 
+		set last_name=#{lastName},gender=#{gender},email=#{email}
+		where id=#{id}
+	</update>
+	
+	<!-- public void deleteEmpById(Integer id); -->
+	<delete id="deleteEmpById">
+		delete from tbl_employee where id=#{id}
+	</delete>
+	
+</mapper>

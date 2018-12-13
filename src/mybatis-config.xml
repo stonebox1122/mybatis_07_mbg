@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 
+		1、Mybatis可以使用properties来引入外部properties配置文件的内容 ,了解（交由spring管理）
+		resource：引入类路径下的资源
+		url：引入网络路径或者磁盘路径下的资源
+	-->
+	<properties resource="db.properties"></properties>
+	
+	<!-- 
+		2、settings包含很多重要的设置项
+		setting：用来设置每一个设置项
+		name：设置项名称
+		value：设置项取值
+	 -->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+	
+	<!-- 3、typeAliases：别名处理器，可以为我们的java类型起别名，别名不区分大小写，建议在Mapper的resultType还是使用全类名 -->
+	<typeAliases>
+		<!-- 
+			1、typeAlias：为某个java类型起别名
+			type：指定要起别名的类型全类名；默认别名为类名小写
+			alias：指定新的别名
+		 -->
+		<!-- <typeAlias type="com.stone.mybatis.bean.Employee" alias="emp"/> -->
+		
+		<!-- 
+			2、package：为某个包下的所有类批量起别名 
+			name：指定包名（为当前包以及下面所有子包的每一个类都起一个别名-类名小写）
+		-->
+		<package name="com.stone.mybatis.bean"/>
+		
+		<!-- 3、批量起别名的情况下，使用@Alias注解为某个类型指定新的别名 -->
+	</typeAliases>
+	
+	<!-- 4、environments：可以配置多种环境，default指定使用某种环境，可以达到快速切换 -->
+	<environments default="mysql">
+		<!-- 
+			environment：配置一个具体的环境 ，id表示当前环境的唯一标识
+			必须有以下两个标签：
+			transactionManager：事物管理器，
+				type：指定事物管理器类型：JDBC(JdbcTransactionFactory)|MANAGED(ManagedTransactionFactory)
+				自定义事物管理器：使用TransactionFactory接口，type指定全类名
+				一般交给Spring来进行事务管理
+			dataSource：数据源；
+				type：数据源类型：UNPOOLED|POOLED|JNDI
+				自定义数据源：实现DataSourceFactory接口，type是全类名
+		-->
+		<environment id="oracle">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${oracle.driverClass}" />
+				<property name="url" value="${oracle.jdbcUrl}" />
+				<property name="username" value="${oracle.username}" />
+				<property name="password" value="${oracle.password}" />
+			</dataSource>
+		</environment>
+		
+		<environment id="mysql">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${mysql.driverClass}" />
+				<property name="url" value="${mysql.jdbcUrl}" />
+				<property name="username" value="${mysql.username}" />
+				<property name="password" value="${mysql.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- 
+		5、databaseIdProvider：支持多数据库厂商
+		type="DB_VENDOR"，VendorDatabaseIdProvider，得到数据库厂商 的标识，
+		Mybatis就能根据数据库厂商标识来执行不同的SQL：MySQL，Oracle，SQL Server
+	-->
+	<databaseIdProvider type="DB_VENDOR">
+		<!-- 为不同的数据库厂商起别名 -->
+		<property name="MySQL" value="mysql"/>
+		<property name="Oracle" value="oracle"/>
+		<property name="SQL Server" value="sqlserver"/>
+	</databaseIdProvider>
+	
+	<!-- 写好的SQL映射文件EmployeeMapper.xml一定要注册到全局配置文件中mybatis-config.xml" -->
+	<!-- 6、将SQL映射注册到全局配置中 -->
+	<mappers>
+		<!-- 
+			mapper：注册一个SQL映射
+				注册配置文件：
+				resource：引用类路径下的SQL映射文件
+				url：引用网络路径或者磁盘路径
+				注册接口：
+				class：注册接口
+					1、有SQL映射文件，映射文件名必须和接口同名，并且放在与接口同一目录下
+					2、没有SQL映射文件，所有的SQL都是利用注解写在接口上
+					推荐：
+						重要复杂的Dao接口来写SQL映射文件
+						不重要简单的Dao接口为了开发快速可以使用注解
+		-->
+		<!-- <mapper resource="com/stone/mybatis/mapper/EmployeeMapper.xml" /> -->
+		<!-- <mapper class="com.stone.mybatis.dao.EmployeeMapperAnnotation"/> -->
+		
+		<!-- 批量注册 ，需要将映射文件放在Dao接口同一个包下-->
+		<package name="com.stone.mybatis.dao"/>		
+	</mappers>		
+</configuration>
