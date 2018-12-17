@@ -6,6 +6,18 @@ public class Department {
 	private Integer id;
 	private String departmentName;
 	private List<Employee> emps;
+	public Department() {
+		super();
+	}
+	public Department(Integer id) {
+		super();
+		this.id = id;
+	}
+	public Department(Integer id, String departmentName) {
+		super();
+		this.id = id;
+		this.departmentName = departmentName;
+	}
 	public Integer getId() {
 		return id;
 	}

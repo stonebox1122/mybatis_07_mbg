@@ -2,6 +2,8 @@ package com.stone.mybatis.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import com.stone.mybatis.bean.Employee;
 import com.stone.mybatis.dao.DepartmentMapper;
 import com.stone.mybatis.dao.EmployeeMapper;
 import com.stone.mybatis.dao.EmployeeMapperAnnotation;
+import com.stone.mybatis.dao.EmployeeMapperDynamicSQL;
 import com.stone.mybatis.dao.EmployeeMapperPlus;
 
 /**
@@ -102,11 +105,10 @@ public class MybatisTest {
 	}
 
 	/**
-	 * 测试增删改
-	 * 1、Mybatis允许增删改直接定义以下类型返回值：Integer、Long、Boolean、void
-	 * 2、需要手动提交数据
-	 * sqlSessionFactory.openSession() ===> 手动提交
-	 * sqlSessionFactory.openSession(true) ===> 自动提交
+	 * 测试增删改 1、Mybatis允许增删改直接定义以下类型返回值：Integer、Long、Boolean、void 2、需要手动提交数据
+	 * sqlSessionFactory.openSession() ===> 手动提交 sqlSessionFactory.openSession(true)
+	 * ===> 自动提交
+	 * 
 	 * @throws IOException
 	 */
 	@Test
@@ -116,30 +118,30 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
-			
-			//测试添加
+
+			// 测试添加
 			Employee employee = new Employee(null, "jerry3@stone.com", "1");
 			mapper.insertEmp(employee);
 			System.out.println(employee.getId());
-			
-			//测试修改
-			//Employee employee2 = new Employee(1, "tom", "tom@stone.com", "1");
-			//boolean updateEmp = mapper.updateEmp(employee2);
-			//System.out.println(updateEmp);
-			
-			//测试删除
-			//mapper.deleteEmpById(2);
-			
-			//3、手动提交
+
+			// 测试修改
+			// Employee employee2 = new Employee(1, "tom", "tom@stone.com", "1");
+			// boolean updateEmp = mapper.updateEmp(employee2);
+			// System.out.println(updateEmp);
+
+			// 测试删除
+			// mapper.deleteEmpById(2);
+
+			// 3、手动提交
 			openSession.commit();
 		} finally {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test04() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -147,10 +149,10 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
-			//Employee empByIdAndLastName = mapper.getEmpByIdAndLastName(1, "tom");
+			// Employee empByIdAndLastName = mapper.getEmpByIdAndLastName(1, "tom");
 			Map<String, Object> map = new HashMap<>();
 			map.put("id", 1);
 			map.put("lastName", "tom");
@@ -161,7 +163,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test05() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -169,7 +171,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
 			List<Employee> empsByLastNameLike = mapper.getEmpsByLastNameLike("%e%");
@@ -180,7 +182,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test06() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -188,7 +190,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
 			Map<String, Object> empByIdReturnMap = mapper.getEmpByIdReturnMap(1);
@@ -197,8 +199,8 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	//输出结果：{gender=1, last_name=tom, id=1, email=tom@stone.com}
-	
+	// 输出结果：{gender=1, last_name=tom, id=1, email=tom@stone.com}
+
 	@Test
 	public void test07() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -206,7 +208,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
 			Map<Integer, Employee> empByLastNameLikeReturnMap = mapper.getEmpByLastNameLikeReturnMap("%e%");
@@ -215,9 +217,9 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	//输出结果：{3=Employee [id=3, lastName=jerry, email=jerry@stone.com, gender=1], 4=Employee [id=4, lastName=jerry, email=jerry@stone.com, gender=1]}
+	// 输出结果：{3=Employee [id=3, lastName=jerry, email=jerry@stone.com, gender=1],
+	// 4=Employee [id=4, lastName=jerry, email=jerry@stone.com, gender=1]}
 
-	
 	@Test
 	public void test08() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -225,7 +227,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
 			Employee empById = mapper.getEmpById(1);
@@ -234,7 +236,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test09() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -242,7 +244,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
 			Employee empAndDept = mapper.getEmpAndDept(1);
@@ -252,7 +254,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test10() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -260,7 +262,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
 			Employee empByIdStep = mapper.getEmpByIdStep(1);
@@ -270,7 +272,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test11() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -278,7 +280,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			EmployeeMapperPlus mapper = openSession.getMapper(EmployeeMapperPlus.class);
 			Employee empByIdStep = mapper.getEmpByIdStep(1);
@@ -291,7 +293,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test12() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -299,7 +301,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			DepartmentMapper mapper = openSession.getMapper(DepartmentMapper.class);
 			Department department = mapper.getDeptByIdPlus(1);
@@ -309,7 +311,7 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
-	
+
 	@Test
 	public void test13() throws IOException {
 		// 1、获取SQLSessionFactory对象
@@ -317,7 +319,7 @@ public class MybatisTest {
 
 		// 2、获取SqlSession对象，不会自动提交
 		SqlSession openSession = sqlSessionFactory.openSession();
-		
+
 		try {
 			DepartmentMapper mapper = openSession.getMapper(DepartmentMapper.class);
 			Department department = mapper.getDeptByIdStep(1);
@@ -327,4 +329,173 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
+
+	// 测试if_where
+	@Test
+	public void test14() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			Employee employee = new Employee(null, "%e%", "jerry@stone.com", null);
+			List<Employee> emps = mapper.getEmpsByConditionIf(employee);
+			for (Employee employee2 : emps) {
+				System.out.println(employee2);
+			}
+		} finally {
+			openSession.close();
+		}
+	}
+
+	// 测试trim
+	@Test
+	public void test15() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			Employee employee = new Employee(null, "%e%", "jerry@stone.com", null);
+			List<Employee> emps = mapper.getEmpsByConditionTrim(employee);
+			for (Employee employee2 : emps) {
+				System.out.println(employee2);
+			}
+		} finally {
+			openSession.close();
+		}
+	}
+
+	// 测试choose
+	@Test
+	public void test16() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			Employee employee = new Employee(3, "%e%", "jerry@stone.com", null);
+			List<Employee> emps = mapper.getEmpsByConditionChoose(employee);
+			for (Employee employee2 : emps) {
+				System.out.println(employee2);
+			}
+		} finally {
+			openSession.close();
+		}
+	}
+
+	// 测试set
+	@Test
+	public void test17() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			Employee employee = new Employee(1, "Admin", null, null);
+			mapper.updateEmp(employee);
+			openSession.commit();
+		} finally {
+			openSession.close();
+		}
+	}
+
+	// 测试foreach
+	@Test
+	public void test18() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			List<Employee> empsByConditionForeach = mapper.getEmpsByConditionForeach(Arrays.asList(1,3));
+			for (Employee employee : empsByConditionForeach) {
+				System.out.println(employee);
+			}
+			
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	// 测试foreach批量插入
+	@Test
+	public void test19() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			List<Employee> emps = new ArrayList<>();
+			emps.add(new Employee(null, "smith", "smith@stone.com", "1", new Department(1)));
+			emps.add(new Employee(null, "allen", "allen@stone.com", "0", new Department(1)));
+			mapper.addEmps(emps);
+			openSession.commit();
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	// 测试内置参数
+	@Test
+	public void test20() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			List<Employee> list = mapper.getEmpsTestInnerParameter(new Employee());
+			for (Employee employee : list) {
+				System.out.println(employee);
+			}
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	// 测试sql绑定
+	@Test
+	public void test21() throws IOException {
+		// 1、获取SQLSessionFactory对象
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+
+		// 2、获取SqlSession对象，不会自动提交
+		SqlSession openSession = sqlSessionFactory.openSession();
+
+		try {
+			EmployeeMapperDynamicSQL mapper = openSession.getMapper(EmployeeMapperDynamicSQL.class);
+			Employee employee2 = new Employee();
+			employee2.setLastName("e");
+			List<Employee> list = mapper.getEmpsTestInnerParameter(employee2);
+			for (Employee employee : list) {
+				System.out.println(employee);
+			}
+		} finally {
+			openSession.close();
+		}
+	}	
+	
+	
+	
 }

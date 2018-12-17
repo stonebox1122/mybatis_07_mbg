@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.stone.mybatis.dao.EmployeeMapperDynamicSQL">
+
+	<!-- 查询员工，要求，携带了哪个字段查询条件就带上这个字段的值 -->
+	<!-- public List<Employee> getEmpsByConditionIf(Employee employee); -->
+	<select id="getEmpsByConditionIf"
+		resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee
+		<!-- 查询的时候如果某些条件没带，可能SQL拼接会有问题 解决方法： 1、给where后面加上1=1，以后的条件都加上and 2、Mybatis使用where标签来将所有的查询条件包括在内 
+			Mybatis就会将where标签中拼接的SQL多出来的and或者or去掉 -->
+		<where>
+			<!-- test：判定表达式(OGNL)，从参数中取值进行判断，遇到特殊符号应该使用转义字符 -->
+			<if test="id!=null">
+				id=#{id}
+			</if>
+			<if test="lastName!=null and lastName!=''">
+				and last_name like #{lastName}
+			</if>
+			<if test="email!=null and email.trim()!=''">
+				and email=#{email}
+			</if>
+			<!-- OGNL会进行字符串与数字的转换判断 -->
+			<if test="gender==0 or gender==1">
+				and gender=#{gender}
+			</if>
+		</where>
+	</select>
+
+	<!-- public List<Employee> getEmpsByConditionTrim(Employee employee); -->
+	<select id="getEmpsByConditionTrim"
+		resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee
+		<!-- trim：自定义字符串的截取规则，解决后面多出的and或者or，where标签不能解决 prefix=""：前缀，整个trim标签体拼接后加一个前缀 
+			prefixOverrides=""：前缀覆盖，去掉整个字符串前面多余的字符 suffix=""：后缀，整个trim标签体拼接后加一个后缀 suffixOverrides=""：前缀覆盖，去掉整个字符串后面多余的字符 -->
+		<trim prefix="where" suffixOverrides="and">
+			<if test="id!=null">
+				id=#{id} and
+			</if>
+			<if test="lastName!=null and lastName!=''">
+				last_name like #{lastName} and
+			</if>
+			<if test="email!=null and email.trim()!=''">
+				email=#{email} and
+			</if>
+			<!-- OGNL会进行字符串与数字的转换判断 -->
+			<if test="gender==0 or gender==1">
+				gender=#{gender}
+			</if>
+		</trim>
+	</select>
+
+	<!-- 如果带了id就用id查，如果带了lastName就用lastName查，只会进入其中一个 -->
+	<!-- public List<Employee> getEmpsByConditionChoose(Employee employee); -->
+	<select id="getEmpsByConditionChoose"
+		resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee
+		<where>
+			<choose>
+				<when test="id!=null">
+					id=#{id}
+				</when>
+				<when test="lastName!=null">
+					last_name like #{lastName}
+				</when>
+				<when test="email!=null">
+					email=#{email}
+				</when>
+				<otherwise>
+					gender=0
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+
+	<!-- set标签用于更新 -->
+	<!-- public void updateEmp(Employee employee); -->
+	<update id="updateEmp">
+		update tbl_employee
+		<set>
+			<!-- <trim prefix="set" suffixOverrides=","></trim> -->
+			<if test="lastName!=null">
+				last_name=#{lastName},
+			</if>
+			<if test="email!=null">
+				email=#{email},
+			</if>
+			<if test="gender!=null">
+				gender=#{gender}
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+
+
+	<!-- public List<Employee> getEmpsByConditionForeach(List<Integer> ids); -->
+	<select id="getEmpsByConditionForeach"
+		resultType="com.stone.mybatis.bean.Employee">
+		select * from tbl_employee where id in
+		<!-- collection：指定要遍历的集合 list类型的参数回特殊处理封装在map里，map的key就叫list item：将当期遍历出的元素赋值给指定的变量 
+			separator：每个元素之间的分隔符 open：遍历出所有结果拼接一个开始的字符 close：遍历出所有结果拼接一个结束的字符 index： 
+			遍历list的时候表示的是索引，item就是当前值， 遍历map的时候表示的是map的key，item就是map的值 #{变量名}就能取出变量的值，也就是当前遍历出的元素 -->
+		<foreach collection="ids" item="item_id" separator=","
+			open="(" close=")">
+			#{item_id}
+		</foreach>
+	</select>
+
+	<!-- 批量保存 -->
+	<!-- public void addEmps(@Param("emps")List<Employee> emps); -->
+	<!-- MySQL下批量保存，可以foreach遍历，MySQL支持values(),(),()语法 -->
+	<insert id="addEmps">
+		insert into tbl_employee(last_name,email,gender,d_id)
+		values
+		<foreach collection="emps" item="emp" separator=",">
+			(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+		</foreach>
+	</insert>
+
+	<!-- 这种方式需要数据库连接属性allowMultiQueries=true；这种分号分隔多个SQL可以用于其他的批量操作 -->
+	<!-- <insert id="addEmps"> <foreach collection="emps" item="emp" separator=";"> 
+		insert into tbl_employee(last_name,email,gender,d_id) values(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id}) 
+		</foreach> </insert> -->
+
+
+	<!-- Oracle数据库批量保存 1、不支持values(),(),() 2、Oracle支持的批量方式 2.1、多个insert放在begin 
+		- end里面 begin insert into emp(empno,ename) values(emp_seq.nextval,'test01'); 
+		insert into emp(empno,ename) values(emp_seq.nextval,'test02'); end; 2.2、利用中间表 
+		insert into emp(empno,ename) select emp_seq.nextval,ename from( select 'test_a_01' 
+		ename from dual union select 'test_a_02' ename from dual union select 'test_a_03' 
+		ename from dual ) -->
+	<insert id="addEmps" databaseId="oracle">
+		<!-- Oracle第1种批量方式 -->
+		<!-- <foreach collection="emps" item="emp" open="begin" close="end;"> insert 
+			into emp(empno,ename) values(emp_seq.nextval,#{emp.lastName}); </foreach> -->
+
+		<!-- Oracle第2种批量方式 -->
+		insert into emp(empno,ename)
+		select emp_seq.nextval,ename from(
+		<foreach collection="emps" item="emp" separator="union">
+			select #{emp.lastName} ename from dual
+		</foreach>
+		)
+	</insert>
+
+	<!-- 2个内置参数： 不只是方法传递过来的参数可以被用来判断，取值等，Mybatis默认还有2个内置参数： _parameter：代表整个参数 
+		单个参数：_parameter就是这个参数 多个参数：参数会被封装为一个map；_parameter就是代表这个map _databaseId：如果配置了databaseIdProvider标签： 
+		_databaseId：就是代表当前数据库别名 -->
+	<!-- public List<Employee> getEmpsTestInnerParameter(Employee employee); -->
+	<select id="getEmpsTestInnerParameter"
+		resultType="com.stone.mybatis.bean.Employee">
+		<!-- bind：可以将OGNL表达式的值绑定到一个变量中，方便后来引用这个变量的值 -->
+		<bind name="_lastName" value="'%'+lastName+'%'" />
+		<if test="_databaseId=='mysql'">
+			select * from tbl_employee
+			<if test="_parameter!=null">
+				where last_name like #{_lastName}
+			</if>
+		</if>
+		<if test="_databaseId=='oracle'">
+			select empno id,ename last_name,gender,email from emp
+			<if test="_parameter!=null">
+				where ename=#{_parameter.lastName}
+			</if>
+		</if>
+	</select>
+
+	<!-- 
+		sql标签：抽取可重用的SQL片段，方便后面引用 
+		1、经常将要查询的列名，或者插入用的列名抽取出来方便引用
+		2、include标签来引用已经抽取的SQL
+		3、include还可以自定义一些property，sql标签内部就能使用自定义的属性，取值的正确方式为：${prop}
+	-->
+	<sql id="insertColumn">
+		<if test="_databaseId=='mysql'">
+			last_name,email,gender,d_id,${testColumn}
+		</if>
+		<if test="_databaseId=='oracle'">
+			ename,email,gender,deptno
+		</if>
+	</sql>
+	<!-- <insert id="addEmps">
+		insert into tbl_employee(
+		引用外部定义的SQL
+		<include refid="insertColumn">
+			<property name="testColumn" value="abc"/>
+		</include>
+		)
+		values
+		<foreach collection="emps" item="emp" separator=",">
+			(#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+		</foreach>
+	</insert> -->
+
+</mapper>
