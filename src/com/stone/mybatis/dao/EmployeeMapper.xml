@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.stone.mybatis.dao.EmployeeMapper">
-<!-- 
-namespace：表示名称空间,指定为接口的全类名
-id：唯一标识，指定为接口的方法名称
-resultType：返回值类型
-#{id}：从传递过来的参数中取出id值
- -->	
+	<!-- 
+		namespace：表示名称空间,指定为接口的全类名
+		id：唯一标识，指定为接口的方法名称
+		resultType：返回值类型
+		#{id}：从传递过来的参数中取出id值
+	 -->
+ 	
+ 	<!-- 
+ 		eviction：缓存的回收策略，默认是LRU
+ 		flushInterval：缓存刷新间隔，多长时间清空一次，默认不清空，设置一个毫秒值
+ 		readOnly：是否只读，
+ 			true：只读，Mybatis认为所有从缓存中获取数据的操作都是只读操作，不会修改数据。为了加快获取速度，直接就会将数据在缓存中的引用交给用户，不安全，速度快
+ 			false：非只读，默认。Mybatis认为获取的数据可能会被修改，会利用序列化&反序列化的技术克隆一份新的数据给用户，安全，速度慢
+ 		size：缓存存放多少元素
+ 		type：指定自定义缓存的全类名，实现Cache接口即可
+ 	 -->
+ 	<!-- <cache eviction="FIFO" flushInterval="60000" readOnly="false" size="1024"></cache> -->
+ 	<cache type="org.mybatis.caches.ehcache.EhcacheCache"></cache>
+ 		
  	<select id="getEmpById" resultType="com.stone.mybatis.bean.Employee">
 		select * from tbl_employee where id = #{id}
 	</select> 

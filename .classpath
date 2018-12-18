@@ -18,5 +18,7 @@
 	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/mysql-connector-java-5.1.23-bin.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="D:/app/Administrator/product/11.2.0/client_1/jdbc/lib/ojdbc6_g.jar"/>
+	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/mybatis-ehcache-1.0.3.jar"/>
+	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/ehcache-core-2.6.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
